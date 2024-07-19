@@ -1,0 +1,62 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+  mongo-express:
+    image: mongo-express:latest
+    depends_on:
+      - mongo
+      - purchasenotifier
+      - kayakpurchaselistener
+      - skyscannerpurchaselistener
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+
+  purchasenotifier:
+    build:
+      context: ./purchaseNotifier
+    ports:
+      - "5000:5000"
+    depends_on:
+      - kafka
+
+  skyscannerpurchaselistener:
+    build:
+      context: ./skyscannerPurchaseListener
+    ports:
+      - "5001:5001"
+    depends_on:
+      - kafka
+
+  kayakpurchaselistener:
+    build:
+      context: ./kayakPurchaseListener
+    ports:
+      - "5002:5002"
+    depends_on:
+      - kafka

@@ -1,0 +1,9 @@
+server:
+  port: 5001
+
+spring:
+  kafka:
+    bootstrap-servers: kafka:9092
+
+mongo:
+  connection-uri: mongodb://mongo:27017
